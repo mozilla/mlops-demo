@@ -7,3 +7,4 @@
 5. Add integration with BigQuery
 6. Add an inference server with Ray-serve
 7. Train two models with different hyperparameters and compare them on weights and biases
+8. Figure out CI
