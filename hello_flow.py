@@ -1,30 +1,39 @@
-from metaflow import FlowSpec, step, pypi
+from metaflow import FlowSpec, step
+from sklearn import datasets
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score
 
-class HelloWorldFlow(FlowSpec):
-    """
-    This flow prints two lines!
 
-    """
+@pypi('scikit-learn')
+class SklearnFlow(FlowSpec):
 
     @step
     def start(self):
-        """
-        This is the 'start' step. All flows must have a step named 'start' that
-        is the first step in the flow.
+        self.iris = datasets.load_iris()
+        self.X = self.iris['data']
+        self.y = self.iris['target']
+        self.next(self.rf_model)
 
-        """
-        print("Wello horld!")
+    @step
+    def rf_model(self):
+        self.clf = RandomForestClassifier(
+            n_estimators=10,
+            max_depth=None,
+            min_samples_split=2,
+            random_state=0
+        )
+        self.next(self.train)
+
+    @step
+    def train(self):
+        self.scores = cross_val_score(self.clf, self.X,
+                                      self.y, cv=5)
         self.next(self.end)
 
     @step
     def end(self):
-        """
-        This is the 'end' step. All flows must have an 'end' step, which is the
-        last step in the flow.
-
-        """
-        print("Success!")
+        print("SklearnFlow is all done.")
 
 
 if __name__ == "__main__":
-    HelloWorldFlow()
+    SklearnFlow()
