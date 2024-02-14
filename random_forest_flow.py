@@ -4,18 +4,16 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 
 
-@pypi('scikit-learn')
 class SklearnFlow(FlowSpec):
-
     @step
     def start(self):
         self.iris = datasets.load_iris()
         self.X = self.iris['data']
         self.y = self.iris['target']
-        self.next(self.rf_model)
+        self.next(self.random_forest_model)
 
     @step
-    def rf_model(self):
+    def random_forest_model(self):
         self.clf = RandomForestClassifier(
             n_estimators=10,
             max_depth=None,
