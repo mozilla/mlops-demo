@@ -1,10 +1,11 @@
-from metaflow import FlowSpec, step
+from metaflow import FlowSpec, step, resources
 from sklearn import datasets
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 
 
 class SklearnFlow(FlowSpec):
+
     @step
     def start(self):
         self.iris = datasets.load_iris()
@@ -12,6 +13,7 @@ class SklearnFlow(FlowSpec):
         self.y = self.iris['target']
         self.next(self.random_forest_model)
 
+    @resources(cpu=2)
     @step
     def random_forest_model(self):
         self.clf = RandomForestClassifier(
