@@ -1,9 +1,20 @@
 import os
 
-from metaflow import FlowSpec, Parameter, card, current, step, pypi, environment
+from metaflow import FlowSpec, Parameter, card, current, step, pypi_base, environment
 from metaflow.cards import Image
 
-class TrainingFlowBQ(FlowSpec):
+from shared.artifact_store import ArtifactStore
+
+@pypi_base(packages={
+    "db-dtypes": "1.2.0",  # Required for pandas + BQ
+    "google-cloud-bigquery": "3.17.2",
+    "matplotlib": "3.8.3", # Required for plotting
+    "pandas": "2.2.0",  # Required for rows.to_dataframe()
+    "scikit-learn": "1.3.1",
+    "numpy": "1.26.0",
+    "wandb": "0.16.3",
+})
+class TrainingFlowBQ(FlowSpec, ArtifactStore):
     """
     A flow that fetches data from BigQuery to be used in other steps.
 
@@ -33,12 +44,6 @@ class TrainingFlowBQ(FlowSpec):
         self.next(self.fetch_bq_data)
 
     @card
-    @pypi(packages={
-        "db-dtypes": "1.2.0",  # Required for pandas + BQ
-        "google-cloud-bigquery": "3.17.2",
-        "matplotlib": "3.8.3", # Required for plotting
-        "pandas": "2.2.0",  # Required for rows.to_dataframe()
-    })
     @step
     def fetch_bq_data(self):
         """
@@ -91,13 +96,6 @@ class TrainingFlowBQ(FlowSpec):
         self.next(self.forecast)
 
     @card
-    @pypi(packages={
-        "scikit-learn": "1.3.1",
-        "matplotlib": "3.8.3",
-        "numpy": "1.26.0",
-        "pandas": "2.2.0",
-        "wandb": "0.16.3",
-    })
     @environment(vars={
         "WANDB_API_KEY": os.getenv("WANDB_API_KEY"), 
         "WANDB_NAME": "Plot HistGradientBoostingRegressor",
@@ -233,6 +231,20 @@ class TrainingFlowBQ(FlowSpec):
         current.card.append(Image.from_matplotlib(fig))
         wandb.finish()
 
+        self.next(self.deploy)
+
+    @step
+    def deploy(self):
+        """
+        Store the model in a location easily reachable by the servers.
+        """
+        import pickle
+        import io
+
+        buff = io.BytesIO()
+        pickle.dump(self.model, buff, protocol=5)
+        self.store(data=buff, filename="model.pkl")
+
         self.next(self.end)
 
     @step
@@ -242,7 +254,20 @@ class TrainingFlowBQ(FlowSpec):
         last step in the flow.
 
         """
-        print("TrainingFlowBQ is all done.")
+        print(
+            f"""
+            TrainingFlowBQ complete.
+
+            The model can be accessed at {self.deployment_path}
+
+            Access evaluation results:
+
+            from metaflow import Flow
+            f = Flow('{current.flow_name}')
+            r = f.latest_successful_run
+            scores = r.data.scores
+            """
+        )
 
 
 if __name__ == "__main__":
