@@ -4,7 +4,7 @@ from typing import Dict
 import ray
 from ray import serve
 from ray.serve import Application
-from metaflow import Flow, Run, get_metadata
+from metaflow import Flow, Run, namespace, get_metadata
 
 
 @serve.deployment
@@ -17,6 +17,13 @@ class Forecaster:
 
         print(f"Querying Metaflow metadata provider: {get_metadata()}")
         
+        # Results are organized by namespace. Make sure to be on the
+        # correct one.
+        if "namespace" in args:
+            ns = args["namespace"]
+            print(f"Changing Metaflow namespace to {ns}")
+            namespace(ns)
+
         run = Run(f"{args['flow-name']}/{args['version']}")\
             if "version" in args\
             else Flow(args["flow-name"]).latest_successful_run

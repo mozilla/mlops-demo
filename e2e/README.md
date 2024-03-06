@@ -30,6 +30,7 @@ applications:
   route_prefix: /
   import_path: forecast:app_builder
   args:
+    namespace: "user:CHANGEME" # TODO, change this!
     flow-name: HelloFlowBQ
     version: 28
   runtime_env:
