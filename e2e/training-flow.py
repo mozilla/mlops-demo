@@ -3,8 +3,6 @@ import os
 from metaflow import FlowSpec, Parameter, card, current, step, pypi_base, environment
 from metaflow.cards import Image
 
-from shared.artifact_store import ArtifactStore
-
 @pypi_base(packages={
     "db-dtypes": "1.2.0",  # Required for pandas + BQ
     "google-cloud-bigquery": "3.17.2",
@@ -14,7 +12,7 @@ from shared.artifact_store import ArtifactStore
     "numpy": "1.26.0",
     "wandb": "0.16.3",
 })
-class TrainingFlowBQ(FlowSpec, ArtifactStore):
+class TrainingFlowBQ(FlowSpec):
     """
     A flow that fetches data from BigQuery to be used in other steps.
 
@@ -231,20 +229,6 @@ class TrainingFlowBQ(FlowSpec, ArtifactStore):
         current.card.append(Image.from_matplotlib(fig))
         wandb.finish()
 
-        self.next(self.deploy)
-
-    @step
-    def deploy(self):
-        """
-        Store the model in a location easily reachable by the servers.
-        """
-        import pickle
-        import io
-
-        buff = io.BytesIO()
-        pickle.dump(self.model, buff, protocol=5)
-        self.store(data=buff, filename="model.pkl")
-
         self.next(self.end)
 
     @step
@@ -258,14 +242,12 @@ class TrainingFlowBQ(FlowSpec, ArtifactStore):
             f"""
             TrainingFlowBQ complete.
 
-            The model can be accessed at {self.deployment_path}
-
             Access evaluation results:
 
             from metaflow import Flow
             f = Flow('{current.flow_name}')
             r = f.latest_successful_run
-            scores = r.data.scores
+            model = r.data.model
             """
         )
 
