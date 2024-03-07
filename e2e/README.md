@@ -1,5 +1,8 @@
 # Example server
 
+> [!NOTE]
+> Python version >= 3.10 is required.
+
 1. `pip install -r requirements.txt`
 2. Try if that works locally: `serve run forecast:app_builder flow-name=HelloFlowBQ`
 3. Autogenerate the config file via: `serve build forecast:app -o serve_config.yaml`. Note that
