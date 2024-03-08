@@ -1,10 +1,32 @@
-# Example server
+# End to end example
 
-> [!NOTE]
-> Python version >= 3.10 is required.
+> [!IMPORTANT]
+> Python version >= 3.10 is required. It is recommended to install the requirements
+> in a Python Virtual Environment and execute the following workflows in such
+> virtual environment.
+> **The workflows expects user to have Weights and Biases and Outerbounds Metaflow accounts configured.**
+
+## Train a model
 
 1. `pip install -r requirements.txt`
-2. Try if that works locally: `serve run forecast:app_builder flow-name=HelloFlowBQ`
+2. Try to run the training flow locally with `python training-flow.py --metadata=local --environment=pypi run --offline True`.
+3. To record the data in Weights and Biases, the `WANDB_API_KEY`, `WANDB_ENTITY` and `WANDB_PROJECT` environment variables need to be set. Then the following command can be used: `python training-flow.py --environment=pypi run --with kubernetes`.
+4. (_Optional_) To run the training on a cluster without recording informations to W&B, the following command can be used: `python training-flow.py --environment=pypi run --offline True --with kubernetes`
+
+The training progress can be tracked on the Outerbounds UI.
+
+## Stand up an example inference server
+
+1. `pip install -r requirements.txt`
+2. Try the inference server locally: `serve run forecast:app_builder flow-name=HelloFlowBQ namespace=<MODEL NAMESPACE>` where
+`<MODEL NAMESPACE>` is the namespace used to store the model in Metaflow, e.g. `user:aplacitelli@mozilla.com`.
+
+> [!NOTE]
+> The previous steps follow Ray Serve [Local Development with HTTP requests](https://docs.ray.io/en/latest/serve/advanced-guides/dev-workflow.html#local-development-with-http-requests) workflow, allowing fast
+> local iteration to prototype the inference server. The next steps are useful to test
+> a deployment process similar to the one happening in production, but not strictly
+> required for local development.
+
 3. Autogenerate the config file via: `serve build forecast:app -o serve_config.yaml`. Note that
 we reference `app` and not `app_builder` here because of a bug in the generator. It would complain
 with `TypeError: Expected 'forecast:app_builder' to be an Application but got <class 'function'>.` otherwise.
@@ -47,4 +69,6 @@ applications:
 5. (_Optional_) Start a local ray cluster: `ray start --head`.
 6. Deploy the server: `serve deploy serve_config.yaml`.
 7. (_Optional_) Check the status via `serve status`.
-8. Try the model: `curl http://127.0.0.1:8000/?q=1.4`.
+
+## Testing the model
+Try the model: [`curl http://127.0.0.1:8000/?q=1.4`](http://127.0.0.1:8000/?q=1.4).
