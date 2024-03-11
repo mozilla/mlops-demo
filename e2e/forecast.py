@@ -9,6 +9,10 @@ from metaflow import Flow, Run, namespace, get_metadata
 
 @serve.deployment
 class Forecaster:
+    """
+    This is an example Ray Serve deployment which uses Metaflow
+    to fetch a model to then serve it in an autoscaling cluster.
+    """
     def __init__(self, args: Dict[str, str]):
         # The name of the flow (or the name + version) can be
         # provided via CLI or via config file.
