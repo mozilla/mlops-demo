@@ -5,19 +5,20 @@
 > in a Python Virtual Environment and execute the following workflows in such
 > virtual environment.
 > **The workflows expects user to have Weights and Biases and Outerbounds Metaflow accounts configured.**
+> In order to have both of those accounts configuerd, you'll need the help of an MLOps admin. Please reach out to us via the #mlops channel in Slack, and we can help you get those accounts set up.
 
 ## Train a model
 
-1. `pip install -r requirements.txt`
+1. From the e2e directory of this repository, run `python3.10 -m pip install -r requirements.txt` (or substitute in `python -m` if Python 3.10 is your default distribution).
 2. Try to run the training flow locally with `python training-flow.py --metadata=local --environment=pypi run --offline True`.
-3. To record the data in Weights and Biases, the `WANDB_API_KEY`, `WANDB_ENTITY` and `WANDB_PROJECT` environment variables need to be set. Then the following command can be used: `python training-flow.py --environment=pypi run --with kubernetes`.
-4. (_Optional_) To run the training on a cluster without recording informations to W&B, the following command can be used: `python training-flow.py --environment=pypi run --offline True --with kubernetes`
+3. To record the data in Weights and Biases, the `WANDB_API_KEY`, `WANDB_ENTITY` and `WANDB_PROJECT` environment variables need to be set. You can set these locally in your virtual envuronment via the command line, or if you're using CI, you can set them on CI. Then you can run this command: `python training-flow.py --environment=pypi run --with kubernetes`.
+5. (_Optional_) To run the training on a cluster without recording informations to W&B, use the following command: `python training-flow.py --environment=pypi run --offline True --with kubernetes`
 
-The training progress can be tracked on the Outerbounds UI.
+You can track the training progress on the Outerbounds UI.
 
 ## Stand up an example inference server
 
-1. `pip install -r requirements.txt`
+1. From the e2e directory, run `pip install -r requirements.txt`
 2. Try the inference server locally: `serve run forecast:app_builder flow-name=HelloFlowBQ namespace=<MODEL NAMESPACE>` where
 `<MODEL NAMESPACE>` is the namespace used to store the model in Metaflow, e.g. `user:aplacitelli@mozilla.com`.
 
@@ -72,3 +73,4 @@ applications:
 
 ## Testing the model
 Try the model: [`curl http://127.0.0.1:8000/?q=1.4`](http://127.0.0.1:8000/?q=1.4).
+You can also visit that URL in your browser. 
