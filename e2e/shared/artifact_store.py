@@ -1,4 +1,5 @@
 import os
+import io
 from metaflow import current
 import logging
 import sys
