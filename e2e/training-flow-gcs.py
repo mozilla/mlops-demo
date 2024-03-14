@@ -245,7 +245,7 @@ class TrainingFlowBQ(FlowSpec, ArtifactStore):
 
         buff = io.BytesIO()
         pickle.dump(self.model, buff, protocol=5)
-        self.store(data=buff, filename="model.pkl")
+        self.store(data=buff.getvalue(), filename="model.pkl")
 
         self.next(self.end)
 
