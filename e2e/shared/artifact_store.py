@@ -1,20 +1,24 @@
 import os
 import io
-from metaflow import current
 import logging
 import sys
 
+from pathlib import Path
+
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
+PROJECT_NAME = "moz-fx-mlops-inference-nonprod"
+BUCKET_NAME = "mf-models-test1"
+
 class ArtifactStore:
-    def _get_storage_path(self, filename: str) -> str:
-        return f"{current.flow_name}/{current.run_id}/{filename}"
+    def _get_storage_path(self,flow_name: str, run_id: str, file_name: str) -> str:
+        return f"{flow_name}/{run_id}/{file_name}"
 
     def _internal_store(self, data: bytes, storage_path: str) -> str:
         from google.cloud import storage
 
-        client = storage.Client(project="moz-fx-mlops-inference-nonprod")
-        bucket = client.get_bucket("mf-models-test1")
+        client = storage.Client(project=PROJECT_NAME)
+        bucket = client.get_bucket(BUCKET_NAME)
 
         blob = bucket.blob(storage_path)
 
@@ -28,12 +32,32 @@ class ArtifactStore:
             logging.info(f"The model is stored at {storage_path}")
 
     def store(self, data: bytes, filename: str) -> str:
-        self.deployment_path = self._get_storage_path(filename)
+        from metaflow import current
+        
+        self.deployment_path = self._get_storage_path(
+            current.flow_name, current.run_id, filename
+        )
 
         self._internal_store(data, self.deployment_path)
 
         return self.deployment_path
 
-if __name__ == "__main__":
-    test = ArtifactStore()
-    test._internal_store(b"test", "mf-models-test1/remove-me/test-2/itworks.txt")
+    def fetch(self, flow_name: str, run_id: str, file_name: str) -> str:
+        from google.cloud import storage
+
+        path = self._get_storage_path(
+            flow_name=flow_name, run_id=run_id, file_name=file_name
+        )
+
+        client = storage.Client(project=PROJECT_NAME)
+        bucket = client.get_bucket(BUCKET_NAME)
+
+        blob = bucket.blob(path)
+
+        # Create any directory that's needed.
+        p = Path(path)
+        p.parent.mkdir(parents=True, exist_ok=True)
+
+        blob.download_to_filename(path)
+
+        return path
