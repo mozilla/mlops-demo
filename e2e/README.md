@@ -1,16 +1,17 @@
 # End to end example
 
-> [!IMPORTANT]
-> Python version >= 3.10 is required. It is recommended to install the requirements
-> in a Python Virtual Environment and execute the following workflows in such
-> virtual environment.
-> **The workflows expects user to have Weights and Biases and Outerbounds Metaflow accounts configured. However, it is not required to able to run the flows locally.**
-> In order to have both of those accounts configuerd, you'll need the help of an MLOps admin. Please reach out to us via the #mlops channel in Slack, and we can help you get those accounts set up.
+## Requirements for Setup:
+1. Python version >= 3.10 
+2. For running flows _non-locally_, you'll need Weights and Biases and Outerbounds Metaflow accounts configured. For that, you'll need the help of an MLOps admin. Please reach out to us via the #mlops channel in Slack, and we can help you get those accounts set up. You _can_ go ahead and get the flows running _locally_ without this step.
+3. You'll need to [set up Application Default Credentials with your user credentials](https://cloud.google.com/bigquery/docs/authentication/getting-started#python).
+
+## Recommendations for Setup:
+1. A virtual environment to install the dependencies and follow the workflows in. You can use `venv` for this, which ships with Python.
 
 ## Train a model
 
 1. From the e2e directory of this repository, run `python3.10 -m pip install -r requirements.txt` (or substitute in `python -m` if Python 3.10 is your default distribution).
-2. Try to run the training flow locally with `python training-flow.py --metadata=local --environment=pypi run --offline True` (please make sure to [set up Application Default Credentials with your user credentials](https://cloud.google.com/bigquery/docs/authentication/getting-started#python) before running this command).
+2. Try to run the training flow locally with `python training-flow.py --metadata=local --environment=pypi run --offline True` 
 3. To record the data in Weights and Biases, the `WANDB_API_KEY`, `WANDB_ENTITY` and `WANDB_PROJECT` environment variables need to be set. You can set these locally in your virtual envuronment via the command line, or if you're using CI, you can set them on CI. Then you can run this command: `python training-flow.py --environment=pypi run --with kubernetes`.
 5. (_Optional_) To run the training on a cluster without recording informations to W&B, use the following command: `python training-flow.py --environment=pypi run --offline True --with kubernetes`
 
